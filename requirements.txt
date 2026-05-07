@@ -1,29 +1,41 @@
 # UI
 streamlit==1.54.0
- 
+
+# API
+fastapi==0.115.0
+uvicorn==0.30.6
+
 # Vector store
 faiss-cpu==1.13.2
- 
-# LangChain stack (LOCK THESE TOGETHER)
+
+# LangChain stack (MUST MATCH)
 langchain==0.3.28
 langchain-core==0.3.84
 langchain-community==0.3.28
+langchain-huggingface==0.3.1
 langchain-google-genai==2.0.7
- 
-# Google Gemini
+
+# Google Gemini SDK
 google-generativeai==0.8.6
- 
+
+# HuggingFace embeddings dependency (CRITICAL – DO NOT OMIT)
+sentence-transformers==2.6.1
+
+# ML / numeric stack (Python 3.12 safe)
+torch==2.3.1
+numpy==1.26.4
+
 # PDF parsing
 pypdf==4.3.1
-jq
- 
+jq==1.7.0
+
+# Validation & schema (LangChain-compatible)
+pydantic==2.11.1
+protobuf==4.25.3
+
 # Env management
 python-dotenv==1.0.1
- 
-# REQUIRED TRANSITIVE DEPENDENCIES
-pydantic==2.11.10
-numpy==1.26.4
-protobuf>=4.23,<5
- 
- 
- 
+
+# HTTP + utility (implicit but pin to avoid resolver drift)
+requests==2.33.0
+tqdm==4.66.4
