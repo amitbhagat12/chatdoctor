@@ -1,57 +1,63 @@
 # 1. Import Library
-from langchain.document_loaders import JSONLoader, CSVLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+ 
+
+from langchain_community.document_loaders import JSONLoader, CSVLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings, SentenceTransformerEmbeddings
 from langchain_community.vectorstores import FAISS
-import faiss
+ 
+# import faiss
+ 
 import os
+ 
 from dotenv import load_dotenv
  
 import warnings
+ 
 warnings.filterwarnings("ignore")
  
 load_dotenv()
  
-# 2. Load JSON File from Data Directory & Create Document
-jq_schema = ".[] | {instruction: .instruction, input: .input, output: .output}"
+def build_index():
  
-loader = JSONLoader(file_path="./data/chatdoctor5k.json",
-                                jq_schema = jq_schema,
-                                text_content = False)
-medical_json_docs = loader.load()
+        # 2. Load JSON File from Data Directory & Create Document
  
-csv_loader = CSVLoader(file_path="./data/format_dataset.csv")
-medical_csv_docs = csv_loader.load()
+        jq_schema = ".[] | {instruction: .instruction, input: .input, output: .output}"
  
-medical_docs = medical_csv_docs + medical_json_docs
+        loader = JSONLoader(file_path="./data/chatdoctor5k.json",
  
-# 3. RecursiveCharacter Text Splitter
-recursive_splitter = RecursiveCharacterTextSplitter(chunk_size = 300, chunk_overlap = 50,
-                                                    separators=["\n\n", "\n", " ", "", ".",",", ";"])
+                                        jq_schema = jq_schema,
  
-recursive_tokens = recursive_splitter.split_documents(medical_docs)
+                                        text_content = False)
  
-# 4. Create embeddings using HFEmbeddings
-hf_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        medical_json_docs = loader.load()
  
-# convert to FAISS index manually
-dimension = 384  # For MiniLM
+        csv_loader = CSVLoader(file_path="./data/format_dataset.csv")
  
-# HNSW stands for Hierarchical Navigable Small World — it a graph-based algorithm used for fast
-# Approximate Nearest Neighbor (ANN) search, which is exactly what you need in a RAG pipeline with FAISS.
-# convert to FAISS index manually
+        medical_csv_docs = csv_loader.load()
  
+        medical_docs = medical_csv_docs + medical_json_docs
  
-index = faiss.IndexHNSWFlat(dimension, 32)     # HNSW - Fast
+        # 3. RecursiveCharacter Text Splitter
  
+        recursive_splitter = RecursiveCharacterTextSplitter(chunk_size = 300, chunk_overlap = 50,separators=["\n\n", "\n", " ", "", ".",",", ";"])
+        recursive_tokens = recursive_splitter.split_documents(medical_docs)
  
-# 5. Create Vector Store
-faiss_store = FAISS.from_documents(documents = recursive_tokens, embedding=hf_embeddings)
+        # 4. Create embeddings using HFEmbeddings
  
-# persist the vector store
-faiss_store.save_local("faiss_index")
+        hf_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
  
-print("FAISS faiss_index created successfully!")
+        # 5. Create Vector Store
+ 
+        faiss_store = FAISS.from_documents(documents = recursive_tokens, embedding=hf_embeddings)
+ 
+        # persist the vector store
+ 
+        faiss_store.save_local("faiss_index")
+ 
+        print("FAISS faiss_index created successfully!")
  
 if __name__ == "__main__":
+ 
         build_index()
+ 
